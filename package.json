@@ -36,6 +36,12 @@
       "oneClick": true,
       "perMachine": false,
       "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity"
     }
   },
   "dependencies": {
