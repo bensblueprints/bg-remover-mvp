@@ -1,0 +1,49 @@
+{
+  "name": "bg-remover",
+  "productName": "BG Remover",
+  "version": "1.0.0",
+  "description": "100% local AI background removal. Unlimited images, full resolution. Pay once, own it forever.",
+  "main": "src/main.js",
+  "author": "Ben (bensblueprints)",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/smoke.js",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "co.onetimesuite.bgremover",
+    "productName": "BG Remover",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/@imgly/**",
+      "node_modules/onnxruntime-node/**",
+      "node_modules/sharp/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "dependencies": {
+    "@imgly/background-removal-node": "^1.4.5",
+    "sharp": "^0.32.6"
+  },
+  "devDependencies": {
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3"
+  }
+}

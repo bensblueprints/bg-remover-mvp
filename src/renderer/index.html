@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file:; style-src 'self' 'unsafe-inline'" />
+  <title>BG Remover</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">BG</div>
+      <div>
+        <h1>BG Remover</h1>
+        <p class="tag">100% local AI &middot; unlimited images &middot; pay once, own it forever</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button id="btnAdd" class="btn ghost">+ Add images</button>
+      <button id="btnClear" class="btn ghost" hidden>Clear</button>
+    </div>
+  </header>
+
+  <div id="modelBanner" class="model-banner" hidden>
+    <div class="spinner"></div>
+    <span id="modelBannerText">Downloading AI model (~80&nbsp;MB, one time)&hellip;</span>
+    <div class="model-progress"><div id="modelProgressFill"></div></div>
+  </div>
+
+  <main class="layout">
+    <aside class="queue" id="queuePanel" hidden>
+      <div class="queue-head">
+        <span>Queue</span>
+        <span id="queueCount" class="pill">0</span>
+      </div>
+      <ul id="queueList"></ul>
+    </aside>
+
+    <section class="stage">
+      <div id="dropzone" class="dropzone">
+        <div class="dz-inner">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <h2>Drop images here</h2>
+          <p>JPG &middot; PNG &middot; WebP &mdash; single or batch</p>
+          <button id="btnBrowse" class="btn primary">Browse files</button>
+        </div>
+      </div>
+
+      <div id="preview" class="preview" hidden>
+        <div class="pane">
+          <div class="pane-label">Before</div>
+          <div class="canvas"><img id="imgBefore" alt="original" /></div>
+        </div>
+        <div class="pane">
+          <div class="pane-label">After</div>
+          <div class="canvas checker"><img id="imgAfter" alt="result" /><div id="afterEmpty" class="after-empty">Not processed yet</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="controls" id="controls" hidden>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Background</span>
+      <div class="seg" id="bgSeg">
+        <button data-mode="transparent" class="seg-btn active">Transparent</button>
+        <button data-mode="color" data-color="#ffffff" class="seg-btn">White</button>
+        <button data-mode="color" data-color="#000000" class="seg-btn">Black</button>
+        <button data-mode="color" data-color="custom" class="seg-btn" id="segCustom">Custom</button>
+        <input type="color" id="customColor" value="#22c55e" title="Pick custom color" />
+      </div>
+    </div>
+    <div class="ctrl-group grow">
+      <span class="ctrl-label">Export to</span>
+      <button id="btnFolder" class="btn ghost folder" title="Change export folder">&hellip;</button>
+    </div>
+    <div class="ctrl-group">
+      <div class="batch-progress" id="batchProgress" hidden>
+        <div class="bar"><div id="batchFill"></div></div>
+        <span id="batchLabel">0 / 0</span>
+        <button id="btnCancel" class="btn ghost small">Cancel</button>
+      </div>
+      <button id="btnProcess" class="btn primary big">Remove backgrounds</button>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

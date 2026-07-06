@@ -1,0 +1,1 @@
+Screenshot placeholder — capture the app window (dark UI, before/after preview) and save as screenshot.png here.
