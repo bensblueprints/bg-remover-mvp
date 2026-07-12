@@ -28,7 +28,7 @@ The AI model (~80 MB) downloads automatically on the first removal — one time,
 
 Don't want to install Node and build from source? Grab the packaged Windows installer — one download, one click, done:
 
-**→ [Get BG Remover on Whop](https://whop.com/onetime-suite)** — $24, one time, yours forever.
+**→ [Get BG Remover on Whop](https://whop.com/benjisaiempire/cutaway)** — $24, one time, yours forever.
 
 ## Quick start (from source)
 
