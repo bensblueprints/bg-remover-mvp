@@ -1,5 +1,9 @@
 # BG Remover
 
+## Demo
+
+VIDEO-PLACEHOLDER
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0ea5e9.svg)](#quick-start)
 [![100% Local](https://img.shields.io/badge/Processing-100%25%20Local-8b5cf6.svg)](#how-it-works)
