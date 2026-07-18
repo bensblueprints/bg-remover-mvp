@@ -2,7 +2,11 @@
 
 ## Demo
 
-VIDEO-PLACEHOLDER
+
+
+https://github.com/user-attachments/assets/ed0dbbd5-c022-48af-a0f6-cfda5a18622e
+
+
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0ea5e9.svg)](#quick-start)
