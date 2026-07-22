@@ -20,6 +20,10 @@ function ensureWorker() {
   });
   worker.on('message', (msg) => {
     if (!msg || !msg.type) return;
+    if (msg.type && msg.type.startsWith('magic-')) {
+      send('magic-update', msg);
+      return;
+    }
     if (msg.type === 'progress') {
       send('job-update', { id: msg.id, status: 'processing', stage: msg.stage, percent: msg.percent });
     } else if (msg.type === 'done') {
@@ -113,6 +117,27 @@ ipcMain.handle('cancel-queue', () => {
   cancelled = true;
   queue.length = 0;
   return true;
+});
+
+// Magic erase: interactive ops forwarded to the worker (stateful per imageId).
+ipcMain.handle('magic-prepare', (_e, imageId, inputPath) => {
+  ensureWorker().postMessage({ cmd: 'magic-prepare', imageId, inputPath });
+});
+ipcMain.handle('magic-click', (_e, imageId, click) => {
+  ensureWorker().postMessage({ cmd: 'magic-click', imageId, click });
+});
+ipcMain.handle('magic-undo', (_e, imageId) => {
+  ensureWorker().postMessage({ cmd: 'magic-undo', imageId });
+});
+ipcMain.handle('magic-close', (_e, imageId) => {
+  ensureWorker().postMessage({ cmd: 'magic-close', imageId });
+});
+ipcMain.handle('magic-save', (_e, currentPath, outputDir, baseName) => {
+  if (!currentPath || !fs.existsSync(currentPath)) return null;
+  fs.mkdirSync(outputDir, { recursive: true });
+  const dest = uniquePath(outputDir, `${baseName}-erased.png`);
+  fs.copyFileSync(currentPath, dest);
+  return dest;
 });
 
 ipcMain.handle('reveal-in-folder', (_e, p) => {

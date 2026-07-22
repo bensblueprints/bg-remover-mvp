@@ -7,9 +7,18 @@ const os = require('os');
 
 const port = process.parentPort;
 
+const { handleMagic } = require('./magic/erase');
+
+const post = (m) => port.postMessage(m);
+
 port.on('message', async (e) => {
   const job = e.data;
-  if (!job || !job.id) return;
+  if (!job) return;
+  if (typeof job.cmd === 'string' && job.cmd.startsWith('magic-')) {
+    await handleMagic(job, post);
+    return;
+  }
+  if (!job.id) return;
   try {
     const wantsColor = job.mode === 'color' && job.color;
     const transparentOut = wantsColor
