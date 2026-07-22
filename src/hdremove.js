@@ -15,7 +15,9 @@ const STD = [0.229, 0.224, 0.225];
 
 let _session = null;
 async function loadBiRefNet() {
-  if (!_session) _session = await ort.InferenceSession.create(modelPath('birefnet_lite_fp32.onnx'));
+  // enableCpuMemArena: false — under Electron's utilityProcess the CPU arena
+  // allocator aborts (SIGTRAP, exit 5) on this model's large allocations.
+  if (!_session) _session = await ort.InferenceSession.create(modelPath('birefnet_lite_fp32.onnx'), { enableCpuMemArena: false });
   return _session;
 }
 
@@ -46,7 +48,8 @@ async function removeBackgroundHD(inputPath, outputPath, opts = {}) {
   for (let i = 0; i < plane; i++) mask[i] = Math.round(255 / (1 + Math.exp(-logits[i])));
   // Resize the mask back to the original size, then join it as the alpha
   // channel. Two quirks of sharp 0.32.6 shape this:
-  //  - 1-channel raw -> resize -> raw comes out all zeros, so the resize
+  //  - 1-channel raw -> resize expands it to 3 channels (values are not
+  //    zeroed), which corrupts downstream raw handling, so the resize
   //    round-trips through PNG and we extract one channel back to raw.
   //  - joinChannel appends every decoded channel, so the mask must be a
   //    1-channel raw buffer with a raw descriptor (the inpaint.js pattern).

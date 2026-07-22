@@ -60,6 +60,13 @@ async function makeFixture() {
   console.log(`[hd] corner alpha avg: ${cornerAlpha.toFixed(1)}, center alpha: ${centerAlpha}`);
   assert.ok(cornerAlpha < 64, 'background corners are (mostly) transparent');
   assert.ok(centerAlpha > 128, 'subject center is (mostly) opaque');
+  // Lock the soft-mask property: a hard binary mask would also pass the
+  // corner/center checks, but BiRefNet's sigmoid mask has graded edges.
+  let hasIntermediate = false;
+  for (let i = 3; i < data.length; i += info.channels) {
+    if (data[i] > 0 && data[i] < 255) { hasIntermediate = true; break; }
+  }
+  assert.ok(hasIntermediate, 'alpha is a soft mask (has intermediate values 1-254)');
 
   console.log(`[hd] PASS in ${((Date.now() - started) / 1000).toFixed(1)}s`);
   console.log(`[hd] transparent cutout: ${output}`);

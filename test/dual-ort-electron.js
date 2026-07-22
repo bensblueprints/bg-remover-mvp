@@ -5,7 +5,8 @@
 // two native ORT libs present segfaults (OrtApis::ReleaseIoBinding).
 //
 // Drives the REAL src/worker.js with the app's exact message sequence:
-// magic-prepare → magic-click → batch job → batch job → magic-click.
+// magic-prepare → magic-click → batch job → batch job → magic-click → batch
+// job → HD batch job.
 // Exit 0 = worker survived everything; exit 1 = worker crashed (bug present).
 //
 // Run with: npx electron test/dual-ort-electron.js
@@ -62,6 +63,9 @@ app.whenReady().then(async () => {
     { send: { id: 2, inputPath: FIXTURE, outputPath: path.join(OUT, 'dual-ort-batch2.png'), mode: 'transparent' }, wait: (m) => m.type === 'done' && m.id === 2, label: 'batch job #2' },
     { send: { cmd: 'magic-click', imageId: 1, click: { x: 100, y: 100 } }, wait: (m) => m.type === 'magic-result' || m.type === 'magic-error', label: 'magic-click #2 after batch' },
     { send: { id: 3, inputPath: FIXTURE, outputPath: path.join(OUT, 'dual-ort-batch3.png'), mode: 'transparent' }, wait: (m) => m.type === 'done' && m.id === 3, label: 'batch job #3' },
+    // modelsDir: null exercises the worker's source-build fallback
+    // (job.modelsDir is falsy, so the default ~/.bg-remover/models dir is used).
+    { send: { id: 4, inputPath: FIXTURE, outputPath: path.join(OUT, 'dual-ort-batch4-hd.png'), mode: 'transparent', engine: 'hd', modelsDir: null }, wait: (m) => m.type === 'done' && m.id === 4, label: 'batch job #4 (HD engine)' },
   ];
 
   let idx = 0;
