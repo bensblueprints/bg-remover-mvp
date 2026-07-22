@@ -24,7 +24,10 @@
       "node_modules/**/*"
     ],
     "extraResources": [
-      { "from": "build/models", "to": "models" }
+      {
+        "from": "build/models",
+        "to": "models"
+      }
     ],
     "asarUnpack": [
       "node_modules/@imgly/**",
@@ -51,7 +54,7 @@
   },
   "dependencies": {
     "@imgly/background-removal-node": "^1.4.5",
-    "onnxruntime-node": "^1.27.0",
+    "onnxruntime-node": "~1.17.0",
     "sharp": "^0.32.6"
   },
   "devDependencies": {

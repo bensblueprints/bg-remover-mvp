@@ -95,6 +95,7 @@ No telemetry. No analytics. The installer never touches the network at all; sour
 ```bash
 npm test                              # full suite: models, bundled models, segment, inpaint, erase, smoke
 npx electron test/smoke-electron.js   # same pipeline inside Electron's runtime
+npx electron test/dual-ort-electron.js # interleaved batch+magic worker crash regression
 npm run dist                          # build Windows NSIS installer (electron-builder)
 ```
 
