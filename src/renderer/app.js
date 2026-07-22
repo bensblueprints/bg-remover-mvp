@@ -6,6 +6,7 @@ const state = {
   selectedId: null,
   mode: 'transparent',
   color: '#ffffff',
+  engine: 'fast',
   outputDir: null,
   running: false,
   batchTotal: 0,
@@ -70,16 +71,23 @@ document.addEventListener('drop', (e) => {
 // ---------------------------------------------------------------------------
 // controls
 // ---------------------------------------------------------------------------
+$('engineSeg').addEventListener('click', (e) => {
+  const btn = e.target.closest('.seg-btn');
+  if (!btn) return;
+  document.querySelectorAll('#engineSeg .seg-btn').forEach((b) => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.engine = btn.dataset.engine;
+});
 $('bgSeg').addEventListener('click', (e) => {
   const btn = e.target.closest('.seg-btn');
   if (!btn) return;
-  document.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('#bgSeg .seg-btn').forEach((b) => b.classList.remove('active'));
   btn.classList.add('active');
   state.mode = btn.dataset.mode;
   state.color = btn.dataset.color === 'custom' ? $('customColor').value : btn.dataset.color;
 });
 $('customColor').addEventListener('input', (e) => {
-  document.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('#bgSeg .seg-btn').forEach((b) => b.classList.remove('active'));
   $('segCustom').classList.add('active');
   state.mode = 'color';
   state.color = e.target.value;
@@ -107,7 +115,7 @@ $('btnProcess').addEventListener('click', async () => {
 
   await api.processImages(
     todo.map((i) => ({ id: i.id, inputPath: i.inputPath })),
-    { outputDir: state.outputDir, mode: state.mode, color: state.color }
+    { outputDir: state.outputDir, mode: state.mode, color: state.color, engine: state.engine }
   );
 });
 
@@ -155,9 +163,11 @@ api.onQueueIdle(() => {
 // ---------------------------------------------------------------------------
 function showModelBanner(percent) {
   $('modelBanner').hidden = false;
-  $('modelProgressFill').style.width = `${percent || 0}%`;
-  $('modelBannerText').textContent =
-    `Loading AI model (bundled, first run)… ${percent || 0}% — every image after this is instant & offline`;
+  const pct = percent || 0;
+  $('modelProgressFill').style.width = `${pct}%`;
+  $('modelBannerText').textContent = pct > 0
+    ? `Downloading AI model (one time)… ${pct}% — every image after this is instant & offline`
+    : 'Loading AI model — the first image is slow (model loading into memory), then it runs offline';
 }
 function hideModelBanner(success) {
   if (!$('modelBanner').hidden && success) api.markModelCached();

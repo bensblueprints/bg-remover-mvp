@@ -27,6 +27,10 @@ const MODELS = {
     url: 'https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx',
     size: 208044816,
   },
+  'birefnet_lite_fp32.onnx': {
+    url: 'https://huggingface.co/onnx-community/BiRefNet_lite-ONNX/resolve/main/onnx/model.onnx',
+    size: 224005088,
+  },
 };
 
 const MODEL_NAMES = Object.keys(MODELS);

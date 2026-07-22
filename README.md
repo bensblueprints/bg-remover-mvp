@@ -30,8 +30,9 @@ remove.bg charges $9/month for 40 credits — and every photo you upload goes to
 - **100% private** — the AI model runs locally; your images never leave your computer
 - **Memory-safe queue** — images process sequentially in an isolated worker process
 - **Magic erase** — click any unwanted object and it's gone, background filled in by local inpainting AI (MobileSAM + LaMa ONNX, bundled in the installer)
+- **HD engine (BiRefNet)** — optional Quality toggle: slower (tens of seconds per image) but keeps held objects and fine detail the fast model drops
 
-Every AI model ships inside the installer, so nothing is ever downloaded — the app works fully offline from the very first launch. (Building from source? The models download once on first use instead.)
+Every AI model ships inside the installer — both cutout engines (U²-Net fast, BiRefNet-lite HD) and the magic-erase pair — so nothing is ever downloaded — the app works fully offline from the very first launch. (Building from source? The models download once on first use instead.)
 
 ## ☕ Skip the setup — get the 1-click installer
 
@@ -93,7 +94,7 @@ No telemetry. No analytics. The installer never touches the network at all; sour
 ## Development
 
 ```bash
-npm test                              # full suite: models, bundled models, segment, inpaint, erase, smoke
+npm test                              # full suite: models, bundled models, hdremove, segment, inpaint, erase, smoke
 npx electron test/smoke-electron.js   # same pipeline inside Electron's runtime
 npx electron test/dual-ort-electron.js # interleaved batch+magic worker crash regression
 npm run dist                          # build Windows NSIS installer (electron-builder)

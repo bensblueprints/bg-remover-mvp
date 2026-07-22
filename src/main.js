@@ -126,6 +126,8 @@ ipcMain.handle('process-images', (_e, jobs, options) => {
       outputPath: uniquePath(options.outputDir, `${base}-nobg.png`),
       mode: options.mode,
       color: options.color,
+      engine: options.engine === 'hd' ? 'hd' : 'fast',
+      modelsDir: bundledModelsDir(),
       publicPath: packagedImglyPublicPath(),
     });
   }

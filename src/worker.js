@@ -25,14 +25,29 @@ port.on('message', async (e) => {
       ? path.join(os.tmpdir(), `bgremover-${job.id}-cutout.png`)
       : job.outputPath;
 
-    await removeBackground(job.inputPath, transparentOut, {
-      publicPath: job.publicPath,
-      onProgress: (key, current, total) => {
-        const stage = key.startsWith('fetch:') ? 'downloading-model' : 'inference';
-        const percent = total ? Math.round((current / total) * 100) : 0;
-        port.postMessage({ type: 'progress', id: job.id, stage, percent });
-      },
-    });
+    if (job.modelsDir) {
+      const { setModelDir, modelsReady, MODEL_NAMES } = require('./models');
+      setModelDir(job.modelsDir);
+      if (!modelsReady(MODEL_NAMES)) setModelDir(null);
+    }
+
+    if (job.engine === 'hd') {
+      const { ensureModels } = require('./models');
+      await ensureModels(['birefnet_lite_fp32.onnx'], (_f, _d, _t, percent) =>
+        port.postMessage({ type: 'progress', id: job.id, stage: 'downloading-model', percent }));
+      const { removeBackgroundHD } = require('./hdremove');
+      port.postMessage({ type: 'progress', id: job.id, stage: 'inference', percent: 0 });
+      await removeBackgroundHD(job.inputPath, transparentOut);
+    } else {
+      await removeBackground(job.inputPath, transparentOut, {
+        publicPath: job.publicPath,
+        onProgress: (key, current, total) => {
+          const stage = key.startsWith('fetch:') ? 'downloading-model' : 'inference';
+          const percent = total ? Math.round((current / total) * 100) : 0;
+          port.postMessage({ type: 'progress', id: job.id, stage, percent });
+        },
+      });
+    }
 
     if (wantsColor) {
       await compositeOnColor(transparentOut, job.outputPath, job.color);
