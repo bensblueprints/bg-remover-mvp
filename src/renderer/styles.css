@@ -259,3 +259,5 @@ body {
   align-items: center; justify-content: center;
   background: rgba(7, 9, 14, 0.6); color: #eef1f6;
 }
+/* [hidden] loses to display:flex above — restore it */
+.magic-overlay[hidden], .magic-spinner[hidden] { display: none; }
