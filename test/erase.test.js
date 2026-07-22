@@ -54,5 +54,40 @@ function waitFor(events, pred) {
   assert.ok(undo, 'undo returns to original with canUndo=false');
 
   await handleMagic({ cmd: 'magic-close', imageId: 1 }, post);
+
+  // --- EXIF orientation: a JPEG tagged orientation 6 displays rotated
+  // (Chromium auto-orients <img>, so clicks arrive in ORIENTED pixels).
+  // Prepare must bake the rotation into the working image, so the prepared
+  // image dims equal the ORIENTED dims, not the raw stored dims.
+  const EXIF = path.join(__dirname, 'fixtures', 'magic-exif.jpg');
+  // Oriented portrait 400x600 (red circle at center), stored raw as 600x400
+  // (rotated 90 CCW) with EXIF orientation 6 (= rotate 90 CW to display).
+  const exifSvg = `<svg width="400" height="600" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="600" fill="#0e8f8f"/>
+    <circle cx="200" cy="300" r="100" fill="#e23b3b"/>
+  </svg>`;
+  await sharp(Buffer.from(exifSvg)).rotate(270)
+    .withMetadata({ orientation: 6 }).jpeg().toFile(EXIF);
+  const exifRawMeta = await sharp(EXIF).metadata();
+  assert.strictEqual(exifRawMeta.width, 600, 'fixture stores raw 600x400');
+  assert.strictEqual(exifRawMeta.orientation, 6, 'fixture carries EXIF orientation 6');
+
+  const readyP2 = waitFor(watchers, (m) => m.type === 'magic-ready' && m.imageId === 2);
+  await handleMagic({ cmd: 'magic-prepare', imageId: 2, inputPath: EXIF }, post);
+  await readyP2;
+
+  // Click the circle center in oriented (display) coordinates.
+  handleMagic({ cmd: 'magic-click', imageId: 2, click: { x: 200, y: 300 } }, post);
+  const res2 = await waitFor(watchers,
+    (m) => (m.type === 'magic-result' || m.type === 'magic-error') && m.imageId === 2);
+  assert.strictEqual(res2.type, 'magic-result', `click on EXIF image succeeds (got ${res2.type}: ${res2.error || ''})`);
+  const meta2 = await sharp(res2.outputPath).metadata();
+  assert.strictEqual(meta2.width, 400, 'working image width is the ORIENTED width');
+  assert.strictEqual(meta2.height, 600, 'working image height is the ORIENTED height');
+  const raw2 = await sharp(res2.outputPath).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const r2c = raw2.data[(300 * raw2.info.width + 200) * 3];
+  assert.ok(r2c < 120, `erased center of EXIF image is no longer red (r=${r2c})`);
+
+  await handleMagic({ cmd: 'magic-close', imageId: 2 }, post);
   console.log('[erase.test] PASS');
 })().catch((e) => { console.error('[erase.test] FAIL:', e); process.exit(1); });

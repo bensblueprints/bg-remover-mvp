@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const sharp = require('sharp');
 const { ensureModels, modelsReady, setModelDir, MODEL_NAMES } = require('../models');
 const { loadSessions, encodeImage, decodeMask } = require('./segment');
 const { loadLama, inpaint } = require('./inpaint');
@@ -27,10 +28,17 @@ async function handleMagic(msg, post) {
       post({ type: 'magic-progress', imageId, stage: 'encoding', percent: 100 });
       const { encoder } = await loadSessions();
       if (!lamaSession) lamaSession = await loadLama();
-      const enc = await encodeImage(encoder, msg.inputPath);
       const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bgremover-magic-'));
       const current = path.join(dir, 'current.png');
-      fs.copyFileSync(msg.inputPath, current);
+      // Bake EXIF orientation into the working image once: Chromium
+      // auto-orients <img>, so click coords arrive in ORIENTED pixels while
+      // sharp reads RAW pixels. Normalizing here keeps clicks, the encoder,
+      // and the saved output in the same pixel space (.rotate() with no
+      // args auto-orients from EXIF).
+      await sharp(msg.inputPath).rotate().png().toFile(current);
+      // Encode the normalized file — the encoder must see the same pixels
+      // the user sees.
+      const enc = await encodeImage(encoder, current);
       images.set(imageId, { inputPath: msg.inputPath, enc, dir, current, history: [] });
       post({ type: 'magic-ready', imageId });
     } else if (cmd === 'magic-click') {

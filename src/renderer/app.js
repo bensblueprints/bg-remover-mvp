@@ -321,7 +321,15 @@ $('magicImg').addEventListener('click', async (e) => {
 
 api.onMagicUpdate((m) => {
   const item = selectedItem();
-  if (!magic.open || !item || m.imageId !== item.id) return;
+  if (!magic.open) return;
+  // Worker-restart errors carry no imageId — accept them while the overlay
+  // is open so the spinner resolves.
+  if (m.type === 'magic-error' && m.imageId == null) {
+    setMagicBusy(false);
+    $('magicHint').textContent = `Error: ${m.error}`;
+    return;
+  }
+  if (!item || m.imageId !== item.id) return;
   if (m.type === 'magic-progress') {
     setMagicBusy(true, m.stage === 'downloading-model'
       ? `Downloading AI models (one time)… ${m.percent}%`

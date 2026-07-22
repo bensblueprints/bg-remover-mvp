@@ -55,6 +55,13 @@ function ensureWorker() {
       activeJob = null;
       pump();
     }
+    // A crash mid-magic-op has no activeJob — tell the renderer so the
+    // overlay spinner resolves instead of spinning forever.
+    send('magic-update', {
+      type: 'magic-error',
+      imageId: null,
+      error: 'AI worker restarted — please reopen Magic erase',
+    });
   });
   return worker;
 }

@@ -138,11 +138,16 @@ async function inpaint(session, inputPath, maskPng) {
       .png().toBuffer();
     region = { left: Math.round(left), top: Math.round(top) };
   } else {
-    const imgSmall = await sharp(inputPath).removeAlpha().resize(BOX, BOX).raw().toBuffer();
-    const maskSmall = await dilated().resize(BOX, BOX).raw().toBuffer();
+    // fit:'fill' squashes to 512 and stretches back, so the round-trip
+    // mapping is identity. (Default fit:'cover' CROPS to aspect, which
+    // shifts the paste-back relative to the feather mask on non-square
+    // images.) Aspect distortion inside the model input beats misalignment.
+    const imgSmall = await sharp(inputPath).removeAlpha()
+      .resize(BOX, BOX, { fit: 'fill' }).raw().toBuffer();
+    const maskSmall = await dilated().resize(BOX, BOX, { fit: 'fill' }).raw().toBuffer();
     const outRaw = await runLama(session, imgSmall, maskSmall);
     inpaintedFull = await sharp(outRaw, { raw: { width: BOX, height: BOX, channels: 3 } })
-      .resize(W, H).png().toBuffer();
+      .resize(W, H, { fit: 'fill' }).png().toBuffer();
   }
 
   // Feather the mask and use it as the alpha of an overlay, so only the
