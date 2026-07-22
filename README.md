@@ -29,8 +29,9 @@ remove.bg charges $9/month for 40 credits — and every photo you upload goes to
 - **Full resolution** — your 6000×4000 photo stays 6000×4000 (remove.bg free tier caps at 0.25 MP)
 - **100% private** — the AI model runs locally; your images never leave your computer
 - **Memory-safe queue** — images process sequentially in an isolated worker process
+- **Magic erase** — click any unwanted object and it's gone, background filled in by local inpainting AI (MobileSAM + LaMa ONNX, bundled in the installer)
 
-The AI model (~80 MB) downloads automatically on the first removal — one time, clearly shown in the UI. After that, everything works fully offline.
+Every AI model ships inside the installer, so nothing is ever downloaded — the app works fully offline from the very first launch. (Building from source? The models download once on first use instead.)
 
 ## ☕ Skip the setup — get the 1-click installer
 
@@ -57,7 +58,7 @@ Requires Node 18+ (tested on Node 24) and Windows / macOS / Linux.
 | Images | **Unlimited** | 40/month, then buy credits |
 | Resolution | **Full, always** | Full res costs 1 credit per image |
 | Privacy | **100% local — nothing uploaded** | Every image uploaded to their servers |
-| Offline | **Yes** (after one-time model download) | No |
+| Offline | **Yes** — all models ship in the installer | No |
 | Batch processing | **Yes, built in** | Paid API / desktop app w/ credits |
 | Source code | **Open (MIT)** | Closed |
 
@@ -71,7 +72,16 @@ BG Remover uses [`@imgly/background-removal-node`](https://github.com/imgly/back
 - **Utility worker process** runs inference, so the UI never freezes — even on a 40-image batch.
 - **sharp** handles compositing flat-color backgrounds and preserving full input resolution.
 
-No telemetry. No analytics. The only network call the app ever makes is the one-time model download.
+### Magic erase
+
+Open an image, hit **✨ Magic erase**, and click the object you want gone.
+A MobileSAM segmentation model turns your click into a precise object mask,
+then a LaMa inpainting model fills the region with plausible background —
+all on your CPU. Undo and Save are built in. Every AI model ships inside the
+installer, so the app works offline from the very first launch. (Building
+from source? Models download once on first use instead.)
+
+No telemetry. No analytics. The installer never touches the network at all; source builds only download the models once on first use.
 
 ## Tech stack
 
@@ -83,7 +93,7 @@ No telemetry. No analytics. The only network call the app ever makes is the one-
 ## Development
 
 ```bash
-npm test                              # smoke test: real removal on a generated fixture
+npm test                              # full suite: models, bundled models, segment, inpaint, erase, smoke
 npx electron test/smoke-electron.js   # same pipeline inside Electron's runtime
 npm run dist                          # build Windows NSIS installer (electron-builder)
 ```

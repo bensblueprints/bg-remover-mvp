@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "test": "node test/smoke.js",
+    "test": "node test/models.test.js && node test/bundled-models.test.js && node test/segment.test.js && node test/inpaint.test.js && node test/erase.test.js && node test/smoke.js",
     "fetch-models": "node scripts/fetch-models.js",
     "dist": "electron-builder --win nsis"
   },
