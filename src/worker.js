@@ -26,6 +26,7 @@ port.on('message', async (e) => {
       : job.outputPath;
 
     await removeBackground(job.inputPath, transparentOut, {
+      publicPath: job.publicPath,
       onProgress: (key, current, total) => {
         const stage = key.startsWith('fetch:') ? 'downloading-model' : 'inference';
         const percent = total ? Math.round((current / total) * 100) : 0;

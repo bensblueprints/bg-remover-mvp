@@ -27,14 +27,16 @@ function modelCacheHint() {
  * Remove the background from an image file and write a transparent PNG.
  * @param {string} inputPath  JPG/PNG/WebP input
  * @param {string} outputPath PNG output (transparent)
- * @param {{onProgress?: (key:string,current:number,total:number)=>void}} [opts]
+ * @param {{onProgress?: (key:string,current:number,total:number)=>void, publicPath?: string}} [opts]
  */
 async function removeBackground(inputPath, outputPath, opts = {}) {
   const removeBg = await loadImgly();
-  const blob = await removeBg(pathToFileURL(inputPath), {
+  const config = {
     output: { format: 'image/png', quality: 1.0 },
     progress: opts.onProgress,
-  });
+  };
+  if (opts.publicPath) config.publicPath = opts.publicPath;
+  const blob = await removeBg(pathToFileURL(inputPath), config);
   const buf = Buffer.from(await blob.arrayBuffer());
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, buf);

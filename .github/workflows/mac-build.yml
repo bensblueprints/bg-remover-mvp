@@ -54,6 +54,9 @@ jobs:
             echo "No frontend build script - skipping"
           fi
 
+      - name: Fetch magic-erase models (~250MB, bundled into installer)
+        run: npm run fetch-models
+
       - name: Build DMG
         shell: bash
         # -c.mac.* CLI overrides cover apps whose electron-builder config has

@@ -6,6 +6,18 @@ const os = require('os');
 let win = null;
 let worker = null;
 
+// Packaged apps ship every AI model inside the installer — point the
+// libraries at the bundled copies so nothing ever downloads at runtime.
+function packagedImglyPublicPath() {
+  if (!app.isPackaged) return null;
+  const dir = path.join(process.resourcesPath, 'app.asar.unpacked',
+    'node_modules', '@imgly', 'background-removal-node', 'dist') + path.sep;
+  return require('url').pathToFileURL(dir).href;
+}
+function bundledModelsDir() {
+  return app.isPackaged ? path.join(process.resourcesPath, 'models') : null;
+}
+
 // ---------------------------------------------------------------------------
 // Sequential job queue (one image at a time — memory safety)
 // ---------------------------------------------------------------------------
@@ -107,6 +119,7 @@ ipcMain.handle('process-images', (_e, jobs, options) => {
       outputPath: uniquePath(options.outputDir, `${base}-nobg.png`),
       mode: options.mode,
       color: options.color,
+      publicPath: packagedImglyPublicPath(),
     });
   }
   pump();
@@ -121,7 +134,7 @@ ipcMain.handle('cancel-queue', () => {
 
 // Magic erase: interactive ops forwarded to the worker (stateful per imageId).
 ipcMain.handle('magic-prepare', (_e, imageId, inputPath) => {
-  ensureWorker().postMessage({ cmd: 'magic-prepare', imageId, inputPath });
+  ensureWorker().postMessage({ cmd: 'magic-prepare', imageId, inputPath, modelsDir: bundledModelsDir() });
 });
 ipcMain.handle('magic-click', (_e, imageId, click) => {
   ensureWorker().postMessage({ cmd: 'magic-click', imageId, click });

@@ -8,6 +8,12 @@ const os = require('os');
 
 const MODEL_DIR = path.join(os.homedir(), '.bg-remover', 'models');
 
+// Installers ship the models inside the app bundle; main passes that
+// location down and we read from it directly (no copy, no download).
+let _modelDirOverride = null;
+function setModelDir(dir) { _modelDirOverride = dir || null; }
+function modelDir() { return _modelDirOverride || MODEL_DIR; }
+
 const MODELS = {
   'mobilesam.encoder.onnx': {
     url: 'https://huggingface.co/spaces/Akbartus/projects/resolve/main/mobilesam.encoder.onnx',
@@ -28,7 +34,7 @@ const MODEL_NAMES = Object.keys(MODELS);
 function modelPath(name) {
   const m = MODELS[name];
   if (!m) throw new Error(`unknown model: ${name}`);
-  return path.join(MODEL_DIR, name);
+  return path.join(modelDir(), name);
 }
 
 /** True when every requested model file exists with its exact byte size. */
@@ -43,7 +49,7 @@ async function downloadOne(name, onProgress) {
   const { url, size } = MODELS[name];
   const dest = modelPath(name);
   const tmp = dest + '.part';
-  fs.mkdirSync(MODEL_DIR, { recursive: true });
+  fs.mkdirSync(modelDir(), { recursive: true });
   const res = await fetch(url, { redirect: 'follow' });
   if (!res.ok || !res.body) throw new Error(`download failed for ${name}: HTTP ${res.status}`);
   const total = Number(res.headers.get('content-length')) || size;
@@ -77,4 +83,4 @@ async function ensureModels(names, onProgress) {
   }
 }
 
-module.exports = { MODEL_DIR, MODELS, MODEL_NAMES, modelPath, modelsReady, ensureModels };
+module.exports = { MODEL_DIR, MODELS, MODEL_NAMES, modelPath, modelsReady, ensureModels, setModelDir };

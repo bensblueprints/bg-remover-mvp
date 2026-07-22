@@ -157,7 +157,7 @@ function showModelBanner(percent) {
   $('modelBanner').hidden = false;
   $('modelProgressFill').style.width = `${percent || 0}%`;
   $('modelBannerText').textContent =
-    `Downloading AI model (~80 MB, one time)… ${percent || 0}% — every image after this is instant & offline`;
+    `Loading AI model (bundled, first run)… ${percent || 0}% — every image after this is instant & offline`;
 }
 function hideModelBanner(success) {
   if (!$('modelBanner').hidden && success) api.markModelCached();
@@ -276,7 +276,7 @@ async function openMagic() {
   magic.canUndo = false;
   $('magicOverlay').hidden = false;
   $('magicImg').src = fileUrl(item.inputPath);
-  setMagicBusy(true, 'Preparing AI (first run downloads ~250 MB of models)…');
+  setMagicBusy(true, 'Preparing AI (first run may take a minute)…');
   await api.magicPrepare(item.id, item.inputPath);
 }
 

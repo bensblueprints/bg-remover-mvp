@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { ensureModels, MODEL_NAMES } = require('../models');
+const { ensureModels, modelsReady, setModelDir, MODEL_NAMES } = require('../models');
 const { loadSessions, encodeImage, decodeMask } = require('./segment');
 const { loadLama, inpaint } = require('./inpaint');
 
@@ -17,6 +17,10 @@ async function handleMagic(msg, post) {
   const { cmd, imageId } = msg;
   try {
     if (cmd === 'magic-prepare') {
+      if (msg.modelsDir) {
+        setModelDir(msg.modelsDir);
+        if (!modelsReady(MODEL_NAMES)) setModelDir(null); // fall back to ~/.bg-remover/models
+      }
       post({ type: 'magic-progress', imageId, stage: 'downloading-model', percent: 0 });
       await ensureModels(MODEL_NAMES, (_f, _d, _t, percent) =>
         post({ type: 'magic-progress', imageId, stage: 'downloading-model', percent }));

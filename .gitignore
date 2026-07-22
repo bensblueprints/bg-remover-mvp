@@ -6,3 +6,4 @@ test/fixtures/
 .DS_Store
 Thumbs.db
 release/
+build/models/
