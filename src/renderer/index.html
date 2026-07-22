@@ -17,6 +17,7 @@
     </div>
     <div class="topbar-right">
       <button id="btnAdd" class="btn ghost">+ Add images</button>
+      <button id="btnMagic" class="btn ghost" hidden>✨ Magic erase</button>
       <button id="btnClear" class="btn ghost" hidden>Clear</button>
     </div>
   </header>
@@ -83,6 +84,21 @@
       <button id="btnProcess" class="btn primary big">Remove backgrounds</button>
     </div>
   </footer>
+
+  <div id="magicOverlay" class="magic-overlay" hidden>
+    <div class="magic-bar">
+      <span id="magicHint">Click the object you want to erase</span>
+      <div class="magic-actions">
+        <button id="btnMagicUndo" class="btn ghost small" disabled>Undo</button>
+        <button id="btnMagicSave" class="btn primary small" disabled>Save PNG</button>
+        <button id="btnMagicClose" class="btn ghost small">Close</button>
+      </div>
+    </div>
+    <div class="magic-stage" id="magicStage">
+      <img id="magicImg" alt="editing" />
+      <div id="magicSpinner" class="magic-spinner" hidden><div class="spinner"></div><span id="magicSpinnerText">Working…</span></div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

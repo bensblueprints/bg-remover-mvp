@@ -178,6 +178,7 @@ function render() {
   $('dropzone').style.display = has ? 'none' : 'grid';
   $('preview').hidden = !has;
   $('btnClear').hidden = !has || state.running;
+  $('btnMagic').hidden = !has || state.running;
   $('queueCount').textContent = state.items.length;
 
   // queue list
@@ -244,3 +245,99 @@ function renderPreview() {
       'Not processed yet';
   }
 }
+
+// ---------------------------------------------------------------------------
+// magic erase editor
+// ---------------------------------------------------------------------------
+const magic = {
+  open: false,
+  busy: false,
+  currentPath: null,
+  canUndo: false,
+};
+
+function selectedItem() {
+  return state.items.find((i) => i.id === state.selectedId);
+}
+
+function setMagicBusy(busy, text) {
+  magic.busy = busy;
+  $('magicSpinner').hidden = !busy;
+  if (text) $('magicSpinnerText').textContent = text;
+  $('btnMagicUndo').disabled = busy || !magic.canUndo;
+  $('btnMagicSave').disabled = busy || !magic.currentPath;
+}
+
+async function openMagic() {
+  const item = selectedItem();
+  if (!item || magic.open) return;
+  magic.open = true;
+  magic.currentPath = null;
+  magic.canUndo = false;
+  $('magicOverlay').hidden = false;
+  $('magicImg').src = fileUrl(item.inputPath);
+  setMagicBusy(true, 'Preparing AI (first run downloads ~250 MB of models)…');
+  await api.magicPrepare(item.id, item.inputPath);
+}
+
+async function closeMagic() {
+  const item = selectedItem();
+  if (item) await api.magicClose(item.id);
+  magic.open = false;
+  magic.currentPath = null;
+  $('magicOverlay').hidden = true;
+}
+
+$('btnMagic').addEventListener('click', openMagic);
+$('btnMagicClose').addEventListener('click', closeMagic);
+$('btnMagicUndo').addEventListener('click', async () => {
+  const item = selectedItem();
+  if (!item || magic.busy || !magic.canUndo) return;
+  setMagicBusy(true, 'Undoing…');
+  await api.magicUndo(item.id);
+});
+$('btnMagicSave').addEventListener('click', async () => {
+  const item = selectedItem();
+  if (!item || !magic.currentPath || magic.busy) return;
+  const base = item.name.replace(/\.[^.]+$/, '');
+  const dest = await api.magicSave(magic.currentPath, state.outputDir, base);
+  if (dest) {
+    $('magicHint').textContent = `Saved: ${dest}`;
+    api.revealInFolder(dest);
+  }
+});
+
+$('magicImg').addEventListener('click', async (e) => {
+  const item = selectedItem();
+  if (!item || magic.busy || !magic.currentPath) return;
+  const img = e.currentTarget;
+  const rect = img.getBoundingClientRect();
+  const x = Math.round(((e.clientX - rect.left) / rect.width) * img.naturalWidth);
+  const y = Math.round(((e.clientY - rect.top) / rect.height) * img.naturalHeight);
+  if (x < 0 || y < 0 || x >= img.naturalWidth || y >= img.naturalHeight) return;
+  setMagicBusy(true, 'Erasing…');
+  await api.magicClick(item.id, { x, y });
+});
+
+api.onMagicUpdate((m) => {
+  const item = selectedItem();
+  if (!magic.open || !item || m.imageId !== item.id) return;
+  if (m.type === 'magic-progress') {
+    setMagicBusy(true, m.stage === 'downloading-model'
+      ? `Downloading AI models (one time)… ${m.percent}%`
+      : 'Analyzing image…');
+  } else if (m.type === 'magic-ready') {
+    magic.currentPath = item.inputPath;
+    setMagicBusy(false);
+    $('magicHint').textContent = 'Click the object you want to erase';
+  } else if (m.type === 'magic-result') {
+    magic.currentPath = m.outputPath;
+    magic.canUndo = m.canUndo;
+    $('magicImg').src = fileUrl(m.outputPath) + `?t=${Date.now()}`;
+    setMagicBusy(false);
+    $('magicHint').textContent = 'Click another object, Undo, or Save';
+  } else if (m.type === 'magic-error') {
+    setMagicBusy(false);
+    $('magicHint').textContent = `Error: ${m.error}`;
+  }
+});
